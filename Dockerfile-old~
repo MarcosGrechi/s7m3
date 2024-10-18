@@ -1,0 +1,29 @@
+# Etapa de build
+FROM openjdk:21-slim-buster AS build
+
+LABEL authors="marcos"
+
+WORKDIR /app
+
+# Copia o código-fonte para a imagem
+COPY . .
+
+# Transforma o mvnw em executável
+RUN chmod +x mvnw
+
+# Compila o projeto
+RUN ./mvnw clean package
+
+# Etapa de execução
+FROM openjdk:21-slim-buster
+
+WORKDIR /app
+
+# Copia o arquivo .jar gerado na etapa de build para a nova imagem
+COPY --from=build /app/target/*.jar app.jar
+
+ENV SERVER_PORT=8081
+
+EXPOSE 8081
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
